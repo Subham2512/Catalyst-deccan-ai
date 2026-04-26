@@ -1,0 +1,138 @@
+{
+  "sample_input": {
+    "jdText": "Senior Full Stack Engineer — FinTech Startup\n\nWe're a Series B fintech startup building the next generation of embedded finance infrastructure. We process $2B+ in transactions annually and are growing 3x YoY.\n\nAbout the Role:\nWe're looking for a Senior Full Stack Engineer to join our core platform team. You'll build the systems that power real-time payment processing, fraud detection, and merchant analytics.\n\nRequirements:\n- 5+ years of full-stack experience\n- Strong proficiency in React and TypeScript (frontend)\n- Node.js or similar backend experience\n- PostgreSQL and Redis experience\n- Experience with AWS or GCP\n- Prior experience in fintech, payments, or high-transaction systems is a strong plus\n\nNice to Have:\n- GraphQL experience\n- Docker/Kubernetes knowledge\n- Experience with event-driven architectures (Kafka/SQS)\n\nCompensation: $175,000 – $220,000 base + equity\nLocation: San Francisco, CA (Hybrid — 2 days/week in office)"
+  },
+  "parsed_jd_output": {
+    "title": "Senior Full Stack Engineer",
+    "requiredSkills": ["React", "TypeScript", "Node.js", "PostgreSQL", "Redis", "AWS", "GCP"],
+    "niceToHaveSkills": ["GraphQL", "Docker", "Kubernetes", "Kafka", "SQS"],
+    "minExperience": 5,
+    "maxExperience": null,
+    "educationRequired": "Not specified",
+    "location": "San Francisco, CA",
+    "remote": false,
+    "salaryRange": "$175,000 – $220,000",
+    "keyResponsibilities": [
+      "Build and maintain payment processing APIs",
+      "Develop merchant-facing dashboards with real-time analytics",
+      "Collaborate with design and product on new features",
+      "Participate in on-call rotation for production systems"
+    ],
+    "companyType": "Series B fintech startup",
+    "seniorityLevel": "Senior"
+  },
+  "top_match_results": [
+    {
+      "candidateId": "c001",
+      "matchScore": 88,
+      "matchReasons": [
+        "6 of 7 required skills matched (React, TypeScript, Node.js, PostgreSQL, Redis, AWS)",
+        "Stripe experience directly aligns with fintech/payments domain",
+        "6 years experience meets 5+ year requirement",
+        "Senior-level trajectory at top-tier fintech companies"
+      ],
+      "missingSkills": ["GCP"],
+      "strengths": [
+        "Deep payments infrastructure background at Stripe and Razorpay",
+        "Built high-throughput APIs at production scale (10M+ transactions/day)",
+        "Strong TypeScript + React frontend skills"
+      ],
+      "concerns": [
+        "Salary expectation ($180k–$220k) sits at the top of the offered range"
+      ]
+    },
+    {
+      "candidateId": "c008",
+      "matchScore": 71,
+      "matchReasons": [
+        "Strong backend systems experience with distributed architecture",
+        "Shopify (high-scale e-commerce) is adjacent to fintech domain",
+        "7 years experience exceeds requirement"
+      ],
+      "missingSkills": ["React", "TypeScript", "PostgreSQL"],
+      "strengths": [
+        "Exceptionally high-performance backend systems (500K events/sec)",
+        "Go/Rust expertise for performance-critical payment paths"
+      ],
+      "concerns": [
+        "Primarily backend — limited frontend experience",
+        "Salary expectation ($185k–$225k) slightly above range"
+      ]
+    }
+  ],
+  "top_interest_result": {
+    "candidateId": "c001",
+    "interestScore": 74,
+    "conversation": [
+      {
+        "role": "recruiter",
+        "content": "Hi Priya! I came across your profile and was really impressed by your work at Stripe on payment infrastructure. We're a Series B fintech building embedded finance and I think there could be a great fit. Would you be open to a quick chat?"
+      },
+      {
+        "role": "candidate",
+        "content": "Hi! Thanks for reaching out — Stripe was an amazing experience. I'm always open to hearing about interesting opportunities, especially in fintech. What kind of scale are you operating at?"
+      },
+      {
+        "role": "recruiter",
+        "content": "We're processing $2B+ in transactions annually and growing 3x YoY. The role is Senior Full Stack — React/TypeScript on the frontend, Node.js backend, PostgreSQL and Redis. Hybrid in SF, 2 days a week."
+      },
+      {
+        "role": "candidate",
+        "content": "That growth rate is impressive. The stack sounds very familiar — I've been living in that exact stack at Stripe. SF hybrid works for me. What does the team structure look like? And what's the hardest engineering problem you're solving right now?"
+      },
+      {
+        "role": "recruiter",
+        "content": "8-person core platform team, reporting to the CTO. The hardest problem right now is building our real-time fraud detection layer without adding latency to the payment flow. Compensation is $175k–$220k base plus meaningful equity."
+      },
+      {
+        "role": "candidate",
+        "content": "The fraud detection problem is genuinely interesting — we tackled something similar at Stripe. I'll be honest, I've had a couple of conversations lately but nothing that's gotten me excited like this one. The equity piece would matter a lot at Series B. Can we set up a call this week?"
+      }
+    ],
+    "interestSignals": [
+      "Asked thoughtful technical questions about team structure and engineering challenges",
+      "Proactively requested a call",
+      "Mentioned comparing against other opportunities — showing active search",
+      "Prior domain experience creates genuine enthusiasm"
+    ],
+    "redFlags": [
+      "Mentioned other active conversations — may need to move quickly",
+      "Flagged equity as a priority — comp discussion needed early"
+    ],
+    "summary": "Priya showed strong, genuine interest. Her Stripe background makes this role feel familiar rather than a stretch, which boosts confidence. She's actively interviewing elsewhere — speed matters. The equity conversation should happen in the first call."
+  },
+  "final_ranked_shortlist": [
+    {
+      "rank": 1,
+      "name": "Priya Sharma",
+      "matchScore": 88,
+      "interestScore": 74,
+      "combinedScore": 82,
+      "readyToContact": true
+    },
+    {
+      "rank": 2,
+      "name": "James Park",
+      "matchScore": 79,
+      "interestScore": 81,
+      "combinedScore": 80,
+      "readyToContact": true
+    },
+    {
+      "rank": 3,
+      "name": "Raj Mehta",
+      "matchScore": 71,
+      "interestScore": 68,
+      "combinedScore": 70,
+      "readyToContact": true
+    },
+    {
+      "rank": 4,
+      "name": "Aisha Patel",
+      "matchScore": 62,
+      "interestScore": 55,
+      "combinedScore": 59,
+      "readyToContact": false
+    }
+  ]
+}
