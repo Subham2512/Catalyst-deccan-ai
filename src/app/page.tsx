@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PipelineResult, RankedCandidate, ParsedJD, Candidate } from "@/types";
 import Dashboard from "./dashboard/page";
 import CandidateManager from "@/components/CandidateManager";
+
+const STORAGE_KEY = "catalyst_pipeline_result";
 
 const SAMPLE_JD = `Senior Full Stack Engineer — FinTech Startup
 
@@ -49,6 +51,20 @@ export default function Home() {
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Restore last result from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setResult(JSON.parse(saved));
+    } catch { /* ignore */ }
+  }, []);
+
+  // Persist result to localStorage whenever it changes
+  useEffect(() => {
+    if (!result) return;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(result)); } catch { /* quota */ }
+  }, [result]);
 
   const runPipeline = async () => {
     if (!jdText.trim()) return;
@@ -116,7 +132,7 @@ export default function Home() {
   };
 
   if (result) {
-    return <Dashboard result={result} onReset={() => setResult(null)} />;
+    return <Dashboard result={result} onReset={() => { setResult(null); localStorage.removeItem(STORAGE_KEY); }} />;
   }
 
   const getStepIcon = (step: string, isLatest: boolean) => {
@@ -160,7 +176,7 @@ export default function Home() {
             and ranks them by both skill fit and genuine interest — in under 2 minutes.
           </p>
 
-          {/* <div className="stats-row">
+          <div className="stats-row">
             <div className="stat-chip">
               <span className="stat-num">15</span>
               <span className="stat-label">Candidates Scanned</span>
@@ -175,7 +191,7 @@ export default function Home() {
               <span className="stat-num">2</span>
               <span className="stat-label">Scores Per Candidate</span>
             </div>
-          </div> */}
+          </div>
         </section>
 
         <section className="input-section">

@@ -145,17 +145,43 @@ function LiveChat({ candidate, onScoreUpdate }: { candidate: RankedCandidate; on
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard({ result, onReset }: Props) {
-  const [selectedCandidate, setSelectedCandidate] = useState<RankedCandidate | null>(
-    result.rankedCandidates[0] ?? null
-  );
-  const [activeTab, setActiveTab] = useState<"overview" | "conversation" | "analysis">("overview");
+  const { parsedJD, rankedCandidates } = result;
+
+  // Read initial candidate + tab from URL on mount
+  const initialCandidate = (() => {
+    if (typeof window === "undefined") return rankedCandidates[0] ?? null;
+    const id = new URLSearchParams(window.location.search).get("c");
+    return rankedCandidates.find((rc) => rc.candidate.id === id) ?? rankedCandidates[0] ?? null;
+  })();
+  const initialTab = (() => {
+    if (typeof window === "undefined") return "overview";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return (["overview", "conversation", "analysis"].includes(t ?? "") ? t : "overview") as "overview" | "conversation" | "analysis";
+  })();
+
+  const [selectedCandidate, setSelectedCandidate] = useState<RankedCandidate | null>(initialCandidate);
+  const [activeTab, setActiveTab] = useState<"overview" | "conversation" | "analysis">(initialTab);
   const [liveScores, setLiveScores] = useState<Record<string, number>>({});
+
+  // Keep URL in sync — ?c=candidateId&tab=tabName
+  const syncUrl = useCallback((candidateId: string, tab: string) => {
+    const params = new URLSearchParams({ c: candidateId, tab });
+    window.history.replaceState(null, "", `?${params.toString()}`);
+  }, []);
+
+  const selectCandidate = useCallback((rc: RankedCandidate) => {
+    setSelectedCandidate(rc);
+    syncUrl(rc.candidate.id, activeTab);
+  }, [activeTab, syncUrl]);
+
+  const selectTab = useCallback((tab: "overview" | "conversation" | "analysis") => {
+    setActiveTab(tab);
+    if (selectedCandidate) syncUrl(selectedCandidate.candidate.id, tab);
+  }, [selectedCandidate, syncUrl]);
 
   const updateScore = useCallback((token: string, score: number) => {
     setLiveScores((prev) => (prev[token] === score ? prev : { ...prev, [token]: score }));
   }, []);
-
-  const { parsedJD, rankedCandidates } = result;
 
   // Use live score if available, else fall back to pipeline score
   const getInterest = (rc: RankedCandidate) => liveScores[rc.chatToken] ?? rc.interestScore;
@@ -198,7 +224,7 @@ export default function Dashboard({ result, onReset }: Props) {
       {/* Header */}
       <header className="dash-header">
         <div className="dash-header-inner">
-          <div className="dash-logo" onClick={onReset} style={{ cursor: "pointer" }}>
+          <div className="dash-logo" onClick={() => { window.history.replaceState(null, "", "/"); onReset(); }} style={{ cursor: "pointer" }}>
             <span>⚡</span>
             <span className="dash-logo-text">Catalyst</span>
           </div>
@@ -208,7 +234,7 @@ export default function Dashboard({ result, onReset }: Props) {
               {parsedJD.seniorityLevel} · {parsedJD.location} · {parsedJD.salaryRange}
             </span>
           </div>
-          <button className="new-search-btn" onClick={onReset}>
+          <button className="new-search-btn" onClick={() => { window.history.replaceState(null, "", "/"); onReset(); }}>
             ← New Search
           </button>
         </div>
@@ -237,7 +263,7 @@ export default function Dashboard({ result, onReset }: Props) {
               <button
                 key={rc.candidate.id}
                 className={`candidate-card ${selectedCandidate?.candidate.id === rc.candidate.id ? "selected" : ""}`}
-                onClick={() => setSelectedCandidate(rc)}
+                onClick={() => selectCandidate(rc)}
               >
                 <div className="candidate-rank">#{index + 1}</div>
                 <div className="candidate-info">
@@ -345,7 +371,7 @@ export default function Dashboard({ result, onReset }: Props) {
                 <button
                   key={tab}
                   className={`tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => selectTab(tab)}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
