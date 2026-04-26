@@ -145,6 +145,7 @@ function LiveChat({ candidate, onScoreUpdate }: { candidate: RankedCandidate; on
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard({ result, onReset }: Props) {
+  if (!result) return null;
   const { parsedJD, rankedCandidates } = result;
 
   // Read initial candidate + tab from URL on mount
