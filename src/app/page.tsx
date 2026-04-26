@@ -157,7 +157,7 @@ export default function Home() {
             <span className="logo-tag">AI Talent Agent</span>
           </div>
           <nav className="header-nav">
-            <a href="https://github.com" target="_blank" className="nav-link">
+            <a href="https://github.com/Subham2512/Catalyst-deccan-ai" target="_blank" className="nav-link">
               GitHub
             </a>
           </nav>
