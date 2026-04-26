@@ -3,95 +3,113 @@
 > **Catalyst 2025 Hackathon Submission**
 > Paste a Job Description. Get a ranked, scored shortlist of candidates — with simulated outreach conversations — in under 2 minutes.
 
+🔗 **[Live Demo](#)** · 📹 **[Demo Video](#)** · 🏗️ **[Architecture](#-architecture)**
+
 ---
 
 ## 🎯 What It Does
 
-Catalyst is an AI-powered talent scouting agent that automates the entire candidate discovery pipeline:
+Recruiters spend hours sifting through profiles and chasing candidate interest. Catalyst automates the entire pipeline:
 
-1. **JD Parsing** — Extracts structured requirements from any free-form job description
-2. **Candidate Discovery & Matching** — Scores 15 candidates against the JD with explainability
-3. **Conversational Outreach Simulation** — Simulates realistic recruiter ↔ candidate conversations via AI
-4. **Dual-Score Ranking** — Ranks candidates by combined Match Score + Interest Score
+1. **JD Parsing** — AI extracts structured requirements from any free-form job description
+2. **Candidate Discovery & Matching** — Scores every candidate in your pool against the JD with full explainability
+3. **Conversational Outreach Simulation** — AI simulates realistic recruiter ↔ candidate conversations for all matched candidates in parallel
+4. **Dual-Score Ranking** — Ranks candidates by Combined Score = Match Score + Interest Score
+
+The recruiter gets an actionable shortlist they can act on immediately — no manual screening, no chasing responses.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-User Input (JD Text)
-       │
-       ▼
-┌─────────────────────┐
-│  /api/parse-jd      │  → Gemini 2.5 Flash extracts: skills, experience,
-│  (JD Parser)        │    seniority, salary, location, responsibilities
-└─────────┬───────────┘
-          │ ParsedJD (structured JSON)
+User Input (JD Text + Candidate Pool)
+          │
           ▼
-┌─────────────────────┐
-│ /api/match-candidates│ → Batch-scores all 15 candidates against ParsedJD
-│ (Matching Engine)   │   Returns top 8 with match scores + explainability
-└─────────┬───────────┘
-          │ MatchResult[] (sorted by matchScore)
-          ▼
-┌─────────────────────┐
-│ /api/simulate-      │ → For each top-6 candidate, simulates a 6-8 message
-│ conversation        │   LinkedIn/email outreach thread, then scores interest
-│ (Outreach Agent)    │
-└─────────┬───────────┘
-          │ InterestResult[] (with conversation + interest signals)
-          ▼
-┌─────────────────────┐
-│  Ranking Engine     │ → Combined Score = (matchScore × 0.55) + (interestScore × 0.45)
-│  (Scoring Logic)    │   Produces final ranked shortlist
-└─────────┬───────────┘
-          │ RankedCandidate[] (sorted by combinedScore)
-          ▼
-┌─────────────────────┐
-│  Dashboard UI       │ → Recruiter sees: ranked list, score breakdown,
-│  (Recruiter View)   │   full conversation, analysis tabs
-└─────────────────────┘
+┌──────────────────────┐
+│   /api/parse-jd      │  Gemini extracts: skills, seniority, salary,
+│   JD Parser          │  location, responsibilities → ParsedJD object
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ /api/match-candidates│  Batch-scores all candidates in groups of 5
+│ Matching Engine      │  Returns top 8 with scores + explainability
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│ /api/chat/create     │  For each matched candidate, AI writes a
+│ Outreach Agent       │  personalised opening message (runs in parallel)
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Ranking Engine      │  Combined = (Match × 0.55) + (Interest × 0.45)
+│  Scoring Logic       │  Sorted by combined score
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Dashboard UI        │  Ranked list · Score breakdown · Conversation
+│  Recruiter View      │  tab · Analysis tab · Match explainability
+└──────────────────────┘
 ```
 
 ### Streaming Pipeline
-The `/api/full-pipeline` route orchestrates all steps and streams progress events back to the UI via `ReadableStream` — so recruiters see live progress as each step completes.
+
+`/api/full-pipeline` orchestrates all steps and streams NDJSON progress events to the UI via `ReadableStream` — recruiters see live status as each step completes.
+
+### Candidate Pool Management
+
+Candidates are managed entirely in the UI — no code editing required. Recruiters can:
+
+- Add candidates manually via a form
+- Import from Excel / CSV (drag and drop)
+- Paste JSON or CSV directly
+- Data persists in `localStorage` across sessions
 
 ---
 
 ## 📊 Scoring Logic
 
 ### Match Score (0–100)
-Evaluates skills + experience + role fit. Weighted formula:
 
-| Dimension | Weight | What's Measured |
-|-----------|--------|-----------------|
-| Skills Alignment | 40% | Required skills overlap, nice-to-have coverage |
-| Experience Level | 25% | Years of experience vs. JD requirements, seniority match |
-| Role Relevance | 20% | Previous titles, company caliber, career trajectory |
-| Education & Background | 15% | Degree level, school prestige, domain relevance |
+Evaluates skill fit, experience, and role alignment:
+
+| Dimension              | Weight | What's Measured                                          |
+| ---------------------- | ------ | -------------------------------------------------------- |
+| Skills Alignment       | 40%    | Required skills overlap, nice-to-have coverage           |
+| Experience Level       | 25%    | Years of experience vs. JD requirements, seniority match |
+| Role Relevance         | 20%    | Previous titles, company caliber, career trajectory      |
+| Education & Background | 15%    | Degree level, prestige, domain relevance                 |
 
 ### Interest Score (0–100)
-Derived from simulated AI conversation analysis:
 
-| Range | Interpretation |
-|-------|----------------|
+Derived from AI-simulated outreach conversation:
+
+| Range  | Interpretation                                |
+| ------ | --------------------------------------------- |
 | 85–100 | Enthusiastically interested, actively seeking |
-| 65–84 | Open and engaged, some hesitation |
-| 45–64 | Passive, lukewarm, significant concerns |
-| 25–44 | Low interest, happy at current job |
-| 0–24 | Declined or clearly not interested |
+| 65–84  | Open and engaged, some hesitation             |
+| 45–64  | Passive, lukewarm, significant concerns       |
+| 25–44  | Low interest, happy at current role           |
+| 0–24   | Declined or clearly not interested            |
 
 ### Combined Score
+
 ```
 Combined = (Match × 0.55) + (Interest × 0.45)
 ```
-Match weighted slightly higher — a brilliant but uninterested candidate ranks below a good match who's genuinely excited.
+
+Match is weighted slightly higher — a brilliant but uninterested candidate ranks below a strong match who is genuinely excited about the role.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - A [Google Gemini API key](https://aistudio.google.com/app/apikey) (free tier works)
 
@@ -107,34 +125,43 @@ npm install
 
 # 3. Set up environment
 cp .env.local.example .env.local
-# Edit .env.local and add your GEMINI_API_KEY
+# Open .env.local and paste your GOOGLE_GENERATIVE_AI_API_KEY
 
-# 4. Run development server
+# 4. Run
 npm run dev
 
 # 5. Open http://localhost:3000
 ```
+
+### Environment Variables
+
+| Variable                       | Description                                 |
+| ------------------------------ | ------------------------------------------- |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Your Gemini API key from Google AI Studio   |
+| `NEXT_PUBLIC_APP_URL`          | Base URL (default: `http://localhost:3000`) |
 
 ### Deploy to Vercel
 
 ```bash
 npm install -g vercel
 vercel
-# Add GEMINI_API_KEY in Vercel environment variables
 ```
+
+Add `GOOGLE_GENERATIVE_AI_API_KEY` and `NEXT_PUBLIC_APP_URL` in the Vercel dashboard under Project → Settings → Environment Variables.
 
 ---
 
 ## 💻 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| AI Model | Gemini 2.5 Flash |
-| Styling | CSS-in-JSX (scoped styles) |
-| Hosting | Vercel |
-| Fonts | Syne + DM Sans + JetBrains Mono |
+| Layer        | Technology                        |
+| ------------ | --------------------------------- |
+| Framework    | Next.js 15 (App Router)           |
+| Language     | TypeScript                        |
+| AI Model     | Gemini via Vercel AI SDK          |
+| AI Client    | `@ai-sdk/google` + `generateText` |
+| Styling      | CSS-in-JSX + CSS variables        |
+| Excel Import | SheetJS (`xlsx`)                  |
+| Hosting      | Vercel                            |
 
 ---
 
@@ -144,42 +171,45 @@ vercel
 src/
 ├── app/
 │   ├── api/
-│   │   ├── parse-jd/route.ts          # JD parsing endpoint
-│   │   ├── match-candidates/route.ts  # Matching engine
-│   │   ├── simulate-conversation/route.ts  # Outreach simulator
-│   │   └── full-pipeline/route.ts    # Orchestrator (streaming)
+│   │   ├── parse-jd/route.ts              # JD parsing
+│   │   ├── match-candidates/route.ts      # Candidate scoring (batched)
+│   │   ├── simulate-conversation/route.ts # Outreach simulation
+│   │   ├── chat/
+│   │   │   ├── create/route.ts            # Create outreach session
+│   │   │   └── [token]/route.ts           # Handle candidate replies
+│   │   ├── full-pipeline/route.ts         # Streaming orchestrator
+│   │   └── health/route.ts               # Health check
+│   ├── chat/
+│   │   └── [token]/page.tsx              # Candidate-facing chat UI
 │   ├── dashboard/
-│   │   └── page.tsx                   # Recruiter dashboard UI
-│   ├── page.tsx                       # Landing + JD input
+│   │   └── page.tsx                       # Recruiter dashboard
+│   ├── page.tsx                           # Landing + JD input
 │   ├── layout.tsx
 │   └── globals.css
+├── components/
+│   └── CandidateManager.tsx              # Add / import / manage candidates
 ├── data/
-│   └── candidates.ts                  # 15 mock candidate profiles
+│   └── candidates.ts                      # Default sample candidate pool
 ├── lib/
-│   └── gemini.ts                      # Gemini API client
+│   ├── ai.ts                              # Gemini client + JSON extraction
+│   └── store.ts                           # In-memory chat session store
 └── types/
-    └── index.ts                       # TypeScript interfaces
+    └── index.ts                           # TypeScript interfaces
 ```
 
 ---
 
-## 🧪 Sample Input
+## 🧪 Sample Input / Output
+
+**Input JD (excerpt):**
 
 ```
 Senior Full Stack Engineer — FinTech Startup
-
-We're a Series B fintech startup building the next generation of embedded finance infrastructure...
-Requirements:
-- 5+ years of full-stack experience
-- React, TypeScript, Node.js
-- PostgreSQL and Redis
-- AWS or GCP
-- Prior fintech/payments experience a strong plus
-Compensation: $175,000 – $220,000
-Location: San Francisco, CA (Hybrid)
+5+ years experience · React, TypeScript, Node.js, PostgreSQL, Redis, AWS
+$175,000 – $220,000 · San Francisco, CA (Hybrid)
 ```
 
-### Sample Output (Top Candidate)
+**Output — Top Candidate:**
 
 ```json
 {
@@ -187,9 +217,20 @@ Location: San Francisco, CA (Hybrid)
   "matchScore": 87,
   "interestScore": 74,
   "combinedScore": 81,
-  "matchReasons": ["6/8 required skills", "Stripe payments background", "Senior-level"],
-  "interestSignals": ["Asked about team size", "Mentioned active job search"],
-  "redFlags": ["Slightly above salary range"]
+  "matchReasons": [
+    "6 of 7 required skills matched",
+    "Stripe payments background"
+  ],
+  "strengths": [
+    "Deep payments infrastructure experience",
+    "Senior-level at top fintech"
+  ],
+  "concerns": ["Salary expectation at top of range"],
+  "interestSignals": [
+    "Asked about team structure",
+    "Requested a call this week"
+  ],
+  "redFlags": ["Mentioned competing offers — move fast"]
 }
 ```
 
@@ -203,7 +244,7 @@ Location: San Francisco, CA (Hybrid)
 
 ## 👨‍💻 Built By
 
-Subham — Indie developer, builder of [ReelAutopsy](https://reelautopsy.com)
+Subham — Indie developer · [ReelAutopsy](https://reelautopsy.com)
 
 ---
 
