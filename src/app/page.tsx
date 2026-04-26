@@ -176,7 +176,7 @@ export default function Home() {
             and ranks them by both skill fit and genuine interest — in under 2 minutes.
           </p>
 
-          <div className="stats-row">
+          {/* <div className="stats-row">
             <div className="stat-chip">
               <span className="stat-num">15</span>
               <span className="stat-label">Candidates Scanned</span>
@@ -191,7 +191,7 @@ export default function Home() {
               <span className="stat-num">2</span>
               <span className="stat-label">Scores Per Candidate</span>
             </div>
-          </div>
+          </div> */}
         </section>
 
         <section className="input-section">
